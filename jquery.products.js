@@ -36,7 +36,7 @@
      read: function() {
        var recentlyViewed = [];
        var cookieValue = Cookies.get(this.name);
-       if (cookieValue !== null) {
+       if (!_.isUndefined(cookieValue)) {
          recentlyViewed = cookieValue.split(' ');
        }
        return recentlyViewed;
@@ -69,7 +69,10 @@
          url: '/products/' + productHandleQueue[0] + '.js',
          cache: false,
          success: function(product) {
-           template.tmpl(product).appendTo(wrapper);
+           var featuredImg = Shopify.resizeImage(product.featured_image, 'grande');
+           var data = { handle: product.handle, url: product.url, img: featuredImg, title: product.title, available: product.available };
+           var item = template(data);
+           wrapper.append(item);
            productHandleQueue.shift();
            shown++;
            moveAlong();
@@ -121,7 +124,8 @@
        productHandleQueue = cookie.read();
 
        // Template and element where to insert.
-       template = $('#' + config.templateId);
+       template = $('#' + config.templateId).html();
+       template = _.template(template);
        wrapper = $('#' + config.wrapperId);
 
        // How many products to show.
